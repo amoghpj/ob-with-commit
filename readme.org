@@ -1,0 +1,20 @@
+* About
+Allows user to specify commit/tag in source block header. If :dir is specified, =ob-with-commit.el= will try to checkout a commit in the specified directory. If not, it will test current directory for a git repo.
+
+Example:
+
+#+begin_src bash :vc v0.1 :dir /path/to/code
+/path/to/code/script
+#+end_src
+
+This is a series of hacks, relying heavily on shell-command-to-string, put together very quickly. This is meant to be a proof of concept, and it works for the cases that I tested. Feedback welcome!
+* Wishlist
+- [ ] handle "remote" vc commands gracefully
+- [ ] Automagically detect vc, abstract away checkout commands
+- [ ] Make dir accept remote paths
+* Load file
+#+begin_src emacs-lisp
+(load-file "ob-with-commit.el")
+#+end_src
+
+
