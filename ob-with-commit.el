@@ -1,5 +1,6 @@
 ;; Heavily borrowed from ob-async.el
 (defun get-dir()
+  "Get :dir from header of source block"
   (setq ob-wc-shell-dir (cdr (assoc :dir (nth 2 (or info (org-babel-get-src-block-info))))))
   (message "dir is currently %s" ob-wc-shell-dir)
   (if (eq ob-wc-shell-dir nil)
@@ -13,7 +14,7 @@
   (cond
    ;; If this function is not called as advice, do nothing
    ((not orig-fun)
-    (warn "ob-vc-shell does nothing")
+    (warn "ob-with-commit does nothing")
     nil)
    ;; If there is no :vc parameter, call the original function
    ((not (assoc :vc
@@ -21,7 +22,7 @@
                      (or info
                          (org-babel-get-src-block-info)))))
     (funcall orig-fun arg info params))
-   ;; Otherwise, perform asynchronous execution
+   ;; Otherwise, check for git repos
    (t
     (let ((dirparam (get-dir))
           (vcparam (cdr (assoc :vc (nth 2 (or info (org-babel-get-src-block-info)))))))
