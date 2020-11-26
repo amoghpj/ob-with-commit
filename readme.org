@@ -1,5 +1,6 @@
 * About
 Allows user to specify commit/tag in source block header. If :dir is specified, =ob-with-commit.el= will try to checkout a commit in the specified directory. If not, it will test current directory for a git repo.
+The objective is to make it easier to use org src blocks for reproducible research, where the version of the script can be easily specified.
 
 Example:
 
