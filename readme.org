@@ -17,4 +17,51 @@ This is a series of hacks, relying heavily on shell-command-to-string, put toget
 (load-file "ob-with-commit.el")
 #+end_src
 
+* Demonstration
+Create a test folder with two commits.
+
+#+begin_src bash
+  rm -rf versioned/ > /dev/null
+  mkdir -p versioned/
+  touch ./versioned/versioned.py
+  cd ./versioned/
+  echo "print('This is version 1')" > versioned.py
+  git init 
+  git add versioned.py 
+  git commit -m "version 1" 
+  git tag -a v0.1 -m "first tag"
+  echo "print('This is version 2')" > versioned.py
+  git add versioned.py 
+  git commit -m "version 2" 
+  git tag -a v0.2 -m "first tag"
+#+end_src
+
+The test folder is ./versioned/, with two tags. It is currently on master.
+#+begin_src bash :results output :dir ./versioned
+git tag 
+#+end_src
+
+: v0.1
+: v0.2
+
+Running the python script =./versioned/versioned.py=
+#+begin_src bash :dir ./versioned/ :results output
+python versioned.py
+#+end_src
+#+RESULTS:
+: This is version 2
+
+Now set it to an older version
+#+begin_src bash :vc v0.1 :dir ./versioned/ :results output
+python versioned.py
+#+end_src
+#+RESULTS:
+: This is version 1
+
+... and back to the the latest version
+#+begin_src bash :vc v0.2 :dir ./versioned/ :results output
+python versioned.py
+#+end_src
+#+RESULTS:
+: This is version 2
 

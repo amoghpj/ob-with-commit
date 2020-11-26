@@ -1,12 +1,12 @@
-;; Heavily borrowed from ob-async.el
-(defun get-dir()
-  "Get :dir from header of source block"
-  (setq ob-wc-shell-dir (cdr (assoc :dir (nth 2 (or info (org-babel-get-src-block-info))))))
-  (message "dir is currently %s" ob-wc-shell-dir)
-  (if (eq ob-wc-shell-dir nil)
-      (concat (replace-regexp-in-string "\n$" "" (shell-command-to-string "pwd")) "/")
-    (expand-file-name ob-wc-shell-dir)))
-  
+;;; ob-with-commit --- Extends org src blocks by allowing users to specify version info
+
+;;; Commentary:
+;; Introduces a new header arg :vc which takes in a commit hash or tag and checkouts out
+;; this version of the code before executing the source block.
+;; After execution, the repo is checkout out to master again by default
+;; This is essentially a proof-of-concept, please do not use it on important repos!
+;; The code has been adapted from ob-async.el
+;;; Code:
 
 (defun ob-with-commit (&optional orig-fun arg info params)
   "Calls  org-babel-execute-src-block after checking for valid git repo and commit."
@@ -17,10 +17,7 @@
     (warn "ob-with-commit does nothing")
     nil)
    ;; If there is no :vc parameter, call the original function
-   ((not (assoc :vc
-                (nth 2
-                     (or info
-                         (org-babel-get-src-block-info)))))
+   ((not (assoc :vc (nth 2 (or info (org-babel-get-src-block-info)))))
     (funcall orig-fun arg info params))
    ;; Otherwise, check for git repos
    (t
@@ -45,6 +42,7 @@
                                  dirparam
                                  vcparam)))
                   ;; 3. If successful, continue with execution...
+                  ;; NOTE: weak error handling. Should I even try?
                   (if (not (or (eq "error:" (car (split-string git-response)))
                                (eq "fatal:" (car (split-string git-response)))))
                       (progn
@@ -52,6 +50,7 @@
                         ;; Finally: reset to original commit
                         ;; NOTE: I am storing original state, so if that isn't
                         ;; master, it would make sense to switch to it.
+                        ;; Not sure what the best way to handle this is.
                         (shell-command-to-string
                          (format "git --git-dir=%s.git --work-tree=%s checkout master"
                                  dirparam
@@ -61,6 +60,14 @@
                     (progn (message "Git checkout failed")
                            (funcall orig-fun arg info params))))))
         (funcall orig-fun arg info params))))))
+
+(defun get-dir ()
+  "Get :dir from header of source block"
+  (setq ob-wc-shell-dir (cdr (assoc :dir (nth 2 (or info (org-babel-get-src-block-info))))))
+  ;; (message "dir is currently %s" ob-wc-shell-dir)
+  (if (eq ob-wc-shell-dir nil)
+      (concat (replace-regexp-in-string "\n$" "" (shell-command-to-string "pwd")) "/")
+    (expand-file-name ob-wc-shell-dir)))  
 
 (defun get-current-commit (dirparam)
   "Returns commit hash of current state of repo at DIRPARAM."
